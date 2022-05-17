@@ -19,4 +19,4 @@ Auth::routes();
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 Route::get('/movies', [App\Http\Controllers\PageController::class, 'index'])->name('movies');
-Route::get('/movies/create', [App\Http\Controllers\PageController::class, 'create_movie']);
+Route::get('/movies/create', [App\Http\Controllers\HomeController::class, 'create_movie']);
