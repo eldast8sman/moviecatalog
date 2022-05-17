@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Movies;
+use App\Http\Resources\MoviesResource;
 use App\Http\Requests\StoreMoviesRequest;
 use App\Http\Requests\UpdateMoviesRequest;
 
@@ -15,7 +16,11 @@ class MoviesController extends Controller
      */
     public function index()
     {
-        //
+        return MoviesResource::collection(Movies::paginate());
+    }
+
+    public function myMovies($id){
+        $movies = MoviesResource::collection(Movies::where('user_id', $id)->paginate());
     }
 
     /**
@@ -36,7 +41,9 @@ class MoviesController extends Controller
      */
     public function store(StoreMoviesRequest $request)
     {
-        //
+        $data = $request->validated();
+        $result = Movies::create($data);
+        return new MoviesResource($result);
     }
 
     /**
@@ -45,9 +52,10 @@ class MoviesController extends Controller
      * @param  \App\Models\Movies  $movies
      * @return \Illuminate\Http\Response
      */
-    public function show(Movies $movies)
+    public function show(Movies $movies, $slug)
     {
-        //
+        $movie = Movies::where('slug', $slug)->first();
+        return new MoviesResource($movie);
     }
 
     /**
@@ -68,9 +76,18 @@ class MoviesController extends Controller
      * @param  \App\Models\Movies  $movies
      * @return \Illuminate\Http\Response
      */
-    public function update(UpdateMoviesRequest $request, Movies $movies)
+    public function update(UpdateMoviesRequest $request, $id)
     {
-        //
+        $movie = Movies::find($id);
+        if($movie){
+            $movie->update($request->all());
+            return new MoviesResource($movie);
+        } else {
+            return response("Movie Not found", 404);
+        }
+        //$movies->update($request->all());
+        //return new MoviesResource($movies);
+        //return response($request->all(), 200);
     }
 
     /**
@@ -79,8 +96,14 @@ class MoviesController extends Controller
      * @param  \App\Models\Movies  $movies
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Movies $movies)
+    public function destroy($id)
     {
-        //
+        $movie = Movies::find($id);
+        if($movie){
+            $movie->delete();
+            return new MoviesResource($movie);
+        } else {
+            return response("Movie Not found", 404);
+        }
     }
 }

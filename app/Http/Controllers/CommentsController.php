@@ -3,11 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Movies;
-use App\Http\Resources\MoviesResource;
-use App\Http\Requests\StoreMoviesRequest;
-use App\Http\Requests\UpdateMoviesRequest;
+use App\Models\Comments;
+use Illuminate\Http\Request;
+use App\Http\Resources\CommentsResource;
+use App\Http\Requests\StoreCommentsRequest;
+use App\Http\Requests\UpdateCommentsRequest;
 
-class MoviesController extends Controller
+class CommentsController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -16,7 +18,7 @@ class MoviesController extends Controller
      */
     public function index()
     {
-        return MoviesResource::collection(Movies::paginate());
+        //
     }
 
     /**
@@ -32,35 +34,44 @@ class MoviesController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \App\Http\Requests\StoreMoviesRequest  $request
+     * @param  \App\Http\Requests\StoreCommentsRequest  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(StoreMoviesRequest $request)
+    public function store(StoreCommentsRequest $request)
     {
         $data = $request->validated();
-        $result = Movies::create($data);
-        return new MoviesResource($result);
+        $result = Comments::create($data);
+        return new CommentsResource($result);
+    }
+
+    public function byMovie(Request $request, $movie_id)
+    {
+        return CommentsResource::collection(Comments::where('movie_id', $movie_id)->paginate());
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Movies  $movies
+     * @param  \App\Models\Comments  $comments
      * @return \Illuminate\Http\Response
      */
-    public function show(Movies $movies, $slug)
+    public function show(Comments $comments, $id)
     {
-        $movie = Movies::where('slug', $slug)->first();
-        return new MoviesResource($movie);
+        $comment = Comments::find($id);
+        if($comment){
+            return new CommentsResource($comment);
+        } else {
+            return response("No Comment was found", 404);
+        }
     }
 
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\Movies  $movies
+     * @param  \App\Models\Comments  $comments
      * @return \Illuminate\Http\Response
      */
-    public function edit(Movies $movies)
+    public function edit(Comments $comments)
     {
         //
     }
@@ -68,38 +79,37 @@ class MoviesController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \App\Http\Requests\UpdateMoviesRequest  $request
-     * @param  \App\Models\Movies  $movies
+     * @param  \App\Http\Requests\UpdateCommentsRequest  $request
+     * @param  \App\Models\Comments  $comments
      * @return \Illuminate\Http\Response
      */
-    public function update(UpdateMoviesRequest $request, $id)
+    public function update(UpdateCommentsRequest $request, $comment_id)
     {
-        $movie = Movies::find($id);
-        if($movie){
-            $movie->update($request->all());
-            return new MoviesResource($movie);
+        $comment = Comments::find($comment_id);
+        if($comment){
+            $data = $request->validated();
+            $comment->comment = $request->comment;
+            $comment->save();
+            return new CommentsResource($comment);
         } else {
-            return response("Movie Not found", 404);
+            return response("No Comment was found", 404);
         }
-        //$movies->update($request->all());
-        //return new MoviesResource($movies);
-        //return response($request->all(), 200);
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Movies  $movies
+     * @param  \App\Models\Comments  $comments
      * @return \Illuminate\Http\Response
      */
     public function destroy($id)
     {
-        $movie = Movies::find($id);
-        if($movie){
-            $movie->delete();
-            return new MoviesResource($movie);
+        $comment = Comments::find($id);
+        if($comment){
+            $comment->delete();
+            return new CommentsResource($comment);
         } else {
-            return response("Movie Not found", 404);
+            return response("Comment Not found", 404);
         }
     }
 }
