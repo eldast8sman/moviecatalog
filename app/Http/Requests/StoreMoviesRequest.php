@@ -32,7 +32,7 @@ class StoreMoviesRequest extends FormRequest
             'ticket_price' => 'required',
             'country' => 'required',
             'genre' => 'required|string',
-            'photo' => 'nullable|string'
+            'photo' => 'required|mimes:jpg,jpeg,png'
         ];
     }
 }

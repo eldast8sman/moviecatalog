@@ -29,4 +29,8 @@ class HomeController extends Controller
     public function create_movie(){
         return view('create_movie');
     }
+
+    public function my_movies(){
+        return view('my_movies');
+    }
 }

@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Movies;
+use Illuminate\Support\Str;
+use Illuminate\Http\UploadedFile;
 use App\Http\Resources\MoviesResource;
 use App\Http\Requests\StoreMoviesRequest;
 use App\Http\Requests\UpdateMoviesRequest;
@@ -19,8 +21,9 @@ class MoviesController extends Controller
         return MoviesResource::collection(Movies::paginate());
     }
 
-    public function myMovies($id){
-        $movies = MoviesResource::collection(Movies::where('user_id', $id)->paginate());
+    public function myMovies(Movies $movies, $id){
+        $movie = MoviesResource::collection(Movies::where('user_id', $id)->paginate());
+        return $movie;
     }
 
     /**
@@ -41,9 +44,16 @@ class MoviesController extends Controller
      */
     public function store(StoreMoviesRequest $request)
     {
-        $data = $request->validated();
-        $result = Movies::create($data);
-        return new MoviesResource($result);
+        $all = $request->all();
+        $image = $all['photo'];
+        unset($all['photo']);
+        if($image instanceof UploadedFile){
+            $filename = Str::random()."_".$image->getClientOriginalName();
+            $image->move(public_path('img'), $filename);
+            $all['photo'] = ('img/'.$filename);
+            $movie = Movies::create($all);
+            return new MoviesResource($movie);
+        }
     }
 
     /**
