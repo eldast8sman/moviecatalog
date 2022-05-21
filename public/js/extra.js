@@ -9,6 +9,30 @@ $.ajaxSetup({
     }
 });
 
+function number_format (number, decimals, dec_point, thousands_sep) {
+    // Strip all characters but numerical ones.
+    number = (number + '').replace(/[^0-9+\-Ee.]/g, '');
+    var n = !isFinite(+number) ? 0 : +number,
+        prec = !isFinite(+decimals) ? 0 : Math.abs(decimals),
+        sep = (typeof thousands_sep === 'undefined') ? ',' : thousands_sep,
+        dec = (typeof dec_point === 'undefined') ? '.' : dec_point,
+        s = '',
+        toFixedFix = function (n, prec) {
+            var k = Math.pow(10, prec);
+            return '' + Math.round(n * k) / k;
+        };
+    // Fix for IE parseFloat(0.55).toFixed(0) = 0;
+    s = (prec ? toFixedFix(n, prec) : '' + Math.round(n)).split('.');
+    if (s[0].length > 3) {
+        s[0] = s[0].replace(/\B(?=(?:\d{3})+(?!\d))/g, sep);
+    }
+    if ((s[1] || '').length < prec) {
+        s[1] = s[1] || '';
+        s[1] += new Array(prec - s[1].length + 1).join('0');
+    }
+    return s.join(dec);
+}
+
 if($("#all_movies").length){
     $.ajax({
         type: "GET",
@@ -59,7 +83,7 @@ if($("#my_movies").length){
                     output +=               '<div class="col-12" style="height: 300px; background-image: url('+BASE_URL+val.photo+'); background-repeat: no-repeat; background-position: top center; background-size: cover"></div>';
                     output +=               '<div class="col-12" style="height=: 350px; overflow: auto">';
                     output +=                   '<p class="m-2 text-center"><strong>Release Date: </strong>'+val.release_date+'</p>';
-                    output +=                   '<p class="m-2"><a href="movie/'+val.slug+'" class="btn btn-success btn-lg btn-block">More Details</a></p>'
+                    output +=                   '<p class="m-2"><a href="'+BASE_URL+'movie/'+val.slug+'" class="btn btn-success btn-lg btn-block">More Details</a></p>'
                     output +=               '</div>';
                     output +=           '</div>';
                     output +=       '</div>';
@@ -74,10 +98,34 @@ if($("#my_movies").length){
             console.log(data.responseText);
         }
     })
-} 
+}
+
+if($("#movie_slug").length){
+    var slug = $("div#movie_slug").text();
+    $.ajax({
+        type: "GET",
+        url: API_URL+"movies/"+slug,
+        data: "json",
+        success: function(response){
+            var movie = response.data;
+            $("h3#movie_name").html(movie.name);
+            var img = '<img src="'+BASE_URL+movie.photo+'" alt="'+movie.name+'" style="max-width:100%; height:auto; margin:0 auto">'
+            $("div#movie_image").html(img);
+            $("td#movie_rel_date").html(movie.release_date);
+            $("td#movie_rating").html(movie.rating+'/5');
+            var formatted = number_format (movie.ticket_price, '2', '.', ',')
+            $("td#movie_ticket_price").html(formatted);
+            $("td#movie_country").html(movie.country);
+            $("td#movie_genre").html(movie.genre);
+            $("td#movie_description").html(movie.description);
+        },
+        error: function(data){
+            alert("This Movie does not exist in our Database");
+        }
+    })
+}
 
 $("#movie_submit").on("click", function(){
-    //preventDefault(e);
     $(".errormsg").remove();
     var name = $("input#name");
     var description = $("textarea#description");
@@ -109,7 +157,7 @@ $("#movie_submit").on("click", function(){
                     success: function(response){
                         if(response.data){
                             alert("Upload successful");
-                            window.location = BASE_URL+"my-movies";
+                            window.location = BASE_URL+"movies/my-movies";
                         } else {
                             alert(response.error);
                         }
@@ -154,85 +202,3 @@ $("#movie_submit").on("click", function(){
     }
     return false;
 })
-
-/*function beforeSubmitMovie(){
-    $(".errormsg").remove();
-    $(".outcome").remove();
-
-    var name = $("input#name");
-    var description = $("textarea#description");
-    var release_date = $("input#release_date");
-    var rating = $("select#rating");
-    var ticket_price = $("input#ticket_price");
-    var country = $("input#country");
-    var genre = $("textarea#genre");
-
-    if((name.val() == "") || (description.val() == "") || (release_date.val() == "")
-    || (rating.val() == "") || (ticket_price.val() == "") || (country.val() == "")
-    || (genre.val() == "")){
-        if(name.val() == ""){
-            name.after('<div class="text-danger errormsg">Please drop the Name of the Movie</div>');
-        }
-        if(description.val() == ""){
-            description.after('<div class="text-danger errormsg">Please drop a description of the Movie</div>');
-        }
-        if(release_date.val() == ""){
-            release_date.after('<div class="errormsg text-danger">The Movie must have a release date</div>');
-        }
-        if(rating.val() == ""){
-            rating.after('<div class="text-danger errormsg">You just select a rating for the Movie</div>');
-        }
-        if(ticket_price.val() == ""){
-            ticket_price.after('<div class="errormsg text-danger">The Ticket Price must be given</div>');
-        }
-        if(country.val() == ""){
-            country.after('<div class="errormsg text-danger">The Country must be provided</div>');
-        }
-        if(genre.val() == ""){
-            genre.after('<div class="errormsg text-danger">The Movie Genre must be provided</div>');
-        }
-        if(files.length < 1){
-            $("input#fileupload").after('<div class="errormsg text-danger">Please upload a Photo for the Movie</div>')
-        }
-        $("button#movie_submit").after('<div class="errormsg text-danger">You must fill all fields</div>');
-        return false;
-    }
-
-    if($("input#fileupload").val() != ""){
-        var file = document.getElementById("fileupload").files[0];
-        
-        if((file.type != "image/png") && (file.type != "image/jpeg") && (file.type != "image/jpg")) {
-            $("input#fileupload").after('<div class="errormsg">Wrong File Format <br />The File must be in JPEG, JPG or PNG format</div>');
-            
-            return false;
-        }	
-    }
-}
-    
-    function onProgressMovie(event,position,total,percentComplete){
-        $("button#movie_submit").html("Uploading at "+percentComplete+"%");
-    }
-
-    function afterSuccessMovie(response){
-        console.log(response);
-    }
-
-    function errorMovie(data){
-        var result = "oopsie"+data.status+" "+data.statusType+" "+data.responseText;
-		console.log(result);
-    }
-
-    $("form#create_movie").trigger("submit", function(){
-        preventDefault();
-        $(this).ajaxSubmit({
-            beforeSubmit: beforeSubmitMovie,
-            uploadProgress: onProgressMovie,
-            dataType: "json",
-            success: afterSuccessMovie,
-            error: errorMovie,
-            resetForm: false
-        });
-        return false;
-        console.log("submitted");
-        return false;
-    });*/
