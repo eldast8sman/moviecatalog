@@ -18,11 +18,11 @@ class MoviesController extends Controller
      */
     public function index()
     {
-        return MoviesResource::collection(Movies::paginate());
+        return MoviesResource::collection(Movies::orderBy('created_at', 'DESC')->paginate());
     }
 
     public function myMovies(Movies $movies, $id){
-        $movie = MoviesResource::collection(Movies::where('user_id', $id)->paginate());
+        $movie = MoviesResource::collection(Movies::orderBy('created_at', 'DESC')->where('user_id', $id)->paginate());
         return $movie;
     }
 

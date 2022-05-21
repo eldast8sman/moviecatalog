@@ -26,7 +26,8 @@ class MoviesResource extends JsonResource
             'genre' => $this->genre,
             'photo' => $this->photo,
             'created_at' => $this->created_at,
-            'updated_at' => $this->updated_at
+            'updated_at' => $this->updated_at,
+            'comments' => CommentsResource::collection($this->comments)
         ];
     }
 }

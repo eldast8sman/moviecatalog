@@ -44,9 +44,9 @@ class CommentsController extends Controller
         return new CommentsResource($result);
     }
 
-    public function byMovie(Request $request, $movie_id)
+    public function byMovie(Request $request, $movies_id)
     {
-        return CommentsResource::collection(Comments::where('movie_id', $movie_id)->paginate());
+        return CommentsResource::collection(Comments::where('movies_id', $movies_id)->paginate());
     }
 
     /**

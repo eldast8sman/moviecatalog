@@ -18,7 +18,7 @@ return new class extends Migration
         Schema::create('comments', function (Blueprint $table) {
             $table->id();
             $table->foreignIdFor(User::class, 'user_id');
-            $table->foreignIdFor(Movies::class, 'movie_id');
+            $table->foreignIdFor(Movies::class, 'movies_id');
             $table->string('name', 1000);
             $table->longText('comment');
             $table->timestamps();

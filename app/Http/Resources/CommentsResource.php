@@ -17,9 +17,11 @@ class CommentsResource extends JsonResource
         return [
             'id' => $this->id,
             'user_id' => $this->user_id,
-            'movie_id' => $this->movie_id,
+            'movies_id' => $this->movies_id,
             'name' => $this->name,
-            'comment' => $this->comment
+            'comment' => $this->comment,
+            'created_at' => $this->created_at,
+            'updated_at' => $this->updated_at
         ];
     }
 }

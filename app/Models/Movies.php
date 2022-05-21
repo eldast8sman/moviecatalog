@@ -19,4 +19,8 @@ class Movies extends Model
             ->generateSlugsFrom('name')
             ->saveSlugsTo('slug');
     }
+
+    public function comments(){
+        return $this->hasMany(Comments::class);
+    }
 }

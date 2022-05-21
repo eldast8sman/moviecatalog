@@ -42,7 +42,7 @@ if($("#all_movies").length){
             if(data.data.length >= 1){
                 var output = ''
                 $.each(data.data, function(key, val){
-                    output += '<div class="col-lg-3 col-md-6 col-sm-12">';
+                    output += '<div class="col-lg-3 col-md-6 col-sm-12 mb-3">';
                     output +=       '<div class="card">';
                     output +=           '<div class="card-header"><h4 class="card-title">'+val.name+'</h4></div>';
                     output +=           '<div class="card-body">';
@@ -76,7 +76,7 @@ if($("#my_movies").length){
             if(data.data.length >= 1){
                 var output = ''
                 $.each(data.data, function(key, val){
-                    output += '<div class="col-lg-3 col-md-6 col-sm-12">';
+                    output += '<div class="col-lg-3 col-md-6 col-sm-12 mb-3">';
                     output +=       '<div class="card">';
                     output +=           '<div class="card-header"><h4 class="card-title">'+val.name+'</h4></div>';
                     output +=           '<div class="card-body">';
@@ -109,18 +109,79 @@ if($("#movie_slug").length){
         success: function(response){
             var movie = response.data;
             $("h3#movie_name").html(movie.name);
-            var img = '<img src="'+BASE_URL+movie.photo+'" alt="'+movie.name+'" style="max-width:100%; height:auto; margin:0 auto">'
+            var img = '<img src="'+BASE_URL+movie.photo+'" alt="'+movie.name+'" style="width:100%; height:auto; margin:0 auto">'
             $("div#movie_image").html(img);
             $("td#movie_rel_date").html(movie.release_date);
             $("td#movie_rating").html(movie.rating+'/5');
-            var formatted = number_format (movie.ticket_price, '2', '.', ',')
+            var formatted = number_format (movie.ticket_price, '2', '.', ',');
             $("td#movie_ticket_price").html(formatted);
             $("td#movie_country").html(movie.country);
             $("td#movie_genre").html(movie.genre);
             $("td#movie_description").html(movie.description);
+            $("input#comments_movies_id").val(movie.id);
+
+            if(movie.comments.length > 0){
+                var comments = movie.comments;
+                var movieComments = ""
+                $.each(comments, function(key, comment){
+                    movieComments += '<p class="mb-4">';
+                    movieComments +=    comment.comment+'<br />';
+                    movieComments +=    '<strong>'+comment.name+'</strong> at <i>'+comment.created_at+'</i>';
+                    movieComments += '</p>'
+                });
+                $("div#all_comments").html(movieComments);
+            }
+
+            $("button#comments_submit").on("click", function(){
+                $(".errormsg").remove();
+                var movies_id = $("input#comments_movies_id").val();
+                var user_id = $("input#comments_user_id").val();
+                var name = $("inpt#comments_name");
+                var comments = $("textarea#comments_comment");
+
+                if((movies_id != "") && (user_id != "") && (name.val() != "") && (comments.val() != "")){
+                    var fd = new FormData(document.querySelector("#add_comment"));
+
+                    $.ajax({
+                        type: "POST",
+                        url: API_URL+"comments",
+                        data: fd,
+                        dataType: "json",
+                        processData: false,
+                        contentType: false,
+                        success: function(response){
+                            var data = response.data;
+                            var output = '<p class="mb-4">';
+                            output +=       data.comment+'<br />';
+                            output +=       '<strong>'+data.name+'</strong> at <i>'+data.created_at+'</i>';
+                            output +=    '</p>';
+                            $("div#all_comments").append(output);
+                        },
+                        error: function(data){
+                            console.log(data.responseText);
+                            alert("Comment was not Saved");
+                        }
+                    })
+                } else {
+                    if(movies_id == ""){
+                        $("button#comments_submit").after('<div class="errormsg text-danger">The Movie is not loaded yet</div>')
+                    }
+                    if(user_id == ""){
+                        $("button#comments_submit").after('<div class="errormsg text-danger">The User Details not loaded</div>');
+                    }
+                    if(name.val() == ""){
+                        $(name).after('<div class="errormsg text-danger">Your Name has to be provided</div>');
+                    }
+                    if(comments.val() == ""){
+                        $(comments).after('<div class="errormsg text-danger">You CANNOT drop an empty comment</div>');
+                    }
+                    return false;
+                }
+            })
         },
         error: function(data){
-            alert("This Movie does not exist in our Database");
+            //alert("This Movie does not exist in our Database");
+            console.log(data.responseText);
         }
     })
 }

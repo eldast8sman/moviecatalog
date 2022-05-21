@@ -9,5 +9,9 @@ class Comments extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['user_id', 'movie_id', 'name', 'comment'];
+    protected $fillable = ['user_id', 'movies_id', 'name', 'comment'];
+
+    public function movie(){
+        return $this->belongsTo(Movies::class);
+    }
 }
