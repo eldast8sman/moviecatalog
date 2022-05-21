@@ -133,6 +133,7 @@ if($("#movie_slug").length){
             }
 
             $("button#comments_submit").on("click", function(){
+                $("button#comments_submit").html('Submitting...');
                 $(".errormsg").remove();
                 var movies_id = $("input#comments_movies_id").val();
                 var user_id = $("input#comments_user_id").val();
@@ -150,6 +151,9 @@ if($("#movie_slug").length){
                         processData: false,
                         contentType: false,
                         success: function(response){
+                            $("button#comments_submit").html('Add Comment');
+                            alert('Comment Added');
+                            comments.empty();
                             var data = response.data;
                             var output = '<p class="mb-4">';
                             output +=       data.comment+'<br />';
@@ -177,7 +181,7 @@ if($("#movie_slug").length){
                     }
                     return false;
                 }
-            })
+            });
         },
         error: function(data){
             //alert("This Movie does not exist in our Database");
